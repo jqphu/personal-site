@@ -1,9 +1,52 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const blogPosts = [
-  { title: 'I Walked 100km for My Birthday', date: 'Dec 20, 2025', href: '#' },
   { title: 'Software Engineering is Dead', date: 'Feb 16, 2026', href: 'https://coreflow.dev/blog/software-engineering-is-dead.html' },
 ]
+
+function ImageLink({ src, alt, children }: {
+  src: string
+  alt: string
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open])
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="text-[#888] text-xs font-light no-underline border-b border-dashed border-[#444] transition-colors hover:text-[#e8e8e8] hover:border-[#e8e8e8] cursor-pointer"
+      >
+        {children}
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer"
+          onClick={() => setOpen(false)}
+        >
+          <div className="relative max-w-3xl w-full">
+            <img src={src} alt={alt} className="w-full rounded" />
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute -top-8 right-0 text-[#666] hover:text-white text-sm transition-colors cursor-pointer"
+            >
+              esc
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 function Section({ title, children, defaultOpen = false }: {
   title: string
@@ -27,13 +70,7 @@ function App() {
     <div className="max-w-[680px] mx-auto px-6 py-15">
       <header className="mb-15">
         <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
-        <p className="text-[#888] text-sm font-light mb-3">
-          Co-founder{' '}
-          <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#888] no-underline border-b border-[#444] transition-colors hover:text-[#e8e8e8] hover:border-[#e8e8e8]">
-            coreflow
-          </a>, Sydney Australia
-        </p>
-        <div className="flex gap-4">
+        <div className="flex gap-4 mt-3">
           <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
           <a href="https://github.com/jqphu" target="_blank" rel="noopener noreferrer" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">GitHub</a>
         </div>
@@ -42,52 +79,46 @@ function App() {
       <Section title="About" defaultOpen>
         <div className="space-y-8">
           <div>
-            <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Career</h3>
-            <div className="space-y-6">
-              <div className="group">
-                <div className="flex items-baseline justify-between mb-2">
-                  <p className="text-sm font-medium">Co-Founder, <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#333] hover:text-white hover:border-white transition-colors">coreflow</a></p>
-                  <span className="text-[#777] text-xs shrink-0 ml-4">2025 –</span>
-                </div>
-                <p className="text-[#999] text-xs font-light leading-[1.9]">AI entertainment, 10m+ users, top 50 AI site globally, $XXM revenue run rate, wrote 80% of the code (well... claude did)</p>
+            <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4"><a href="https://www.linkedin.com/in/justin-phu/" target="_blank" rel="noopener noreferrer" className="text-[#777] no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">Career ↗</a></h3>
+            <div className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Co-Founder, <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">coreflow ↗</a></p>
+                <span className="text-[#777] text-xs shrink-0 ml-4">2025 –</span>
               </div>
-              <div className="group">
-                <div className="flex items-baseline justify-between mb-2">
-                  <p className="text-sm font-medium">Co-Founder, <a href="https://pocketuniverse.app" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#333] hover:text-white hover:border-white transition-colors">Pocket Universe</a> <span className="text-[#777] text-xs font-light italic">(Acquired)</span></p>
-                  <span className="text-[#777] text-xs shrink-0 ml-4">2022 – 2025</span>
-                </div>
-                <p className="text-[#999] text-xs font-light leading-[1.9]">crypto fraud protection, 0→200k weekly active users, &gt;$1B in assets protected, $4M+ revenue run rate (70%+ profit), wrote 80%+ of the code</p>
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Co-Founder, <a href="https://pocketuniverse.app" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">Pocket Universe ↗</a> <span className="text-[#777] text-xs font-light italic">(Acquired)</span></p>
+                <span className="text-[#777] text-xs shrink-0 ml-4">2022 – 2025</span>
               </div>
-              <div className="group">
-                <div className="flex items-baseline justify-between mb-2">
-                  <p className="text-sm font-medium">Staff Engineer, Facebook</p>
-                  <span className="text-[#777] text-xs shrink-0 ml-4">2019 – 2022</span>
-                </div>
-                <p className="text-[#999] text-xs font-light leading-[1.9]">building a microkernel operating system from scratch, led a six-person runtime team, new grad → staff in 2 years</p>
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Staff Engineer, Facebook</p>
+                <span className="text-[#777] text-xs shrink-0 ml-4">2019 – 2022</span>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Always building</h3>
-            <p className="text-[#999] text-xs font-light leading-[1.9] mb-4">I'm always building things, sometimes it's useful.</p>
-            <img src="/github-contributions.png" alt="GitHub contributions 2022–2026" className="w-full rounded opacity-90" />
+            <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Values</h3>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+              <li>grit. <ImageLink src="/github-contributions.png" alt="GitHub contributions 2022–2026">keep building.</ImageLink></li>
+              <li>have fun, it's easier. <ImageLink src="https://images.prismic.io/sketchplanations/281df432-3a48-4e78-ac58-1ff835091f99_SP+582+-+The+fun+scale+-+revised.png?auto=format%2Ccompress&fit=max&w=1920" alt="The fun scale — Type 1, 2, and 3 fun explained">type 2 fun.</ImageLink></li>
+              <li>who you work with &gt;&gt; everything else</li>
+              <li>never satisfied. always faster. always better.</li>
+            </ul>
           </div>
           <div>
             <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Fitness</h3>
-            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1">
-              <li>🏋️ 1,000lb club — squat 172.5kg · bench 110kg · deadlift 195kg</li>
-              <li>🏃 sub 2hr half marathon → chasing a sub 4hr marathon</li>
-              <li>🎾 aspiring to one day be the world's best 65+ tennis player — currently terrible at USTA 3.5</li>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+              <li>lifting: 1,000lb club (squat 172.5 · bench 110 · deadlift 195kg)</li>
+              <li>running: sub 2hr half → sub 4hr full</li>
+              <li>tennis: USTA 3.5 → best 65+ year old player alive</li>
             </ul>
           </div>
           <div>
             <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Life</h3>
-            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 mb-4">
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside mb-4">
               <li>married</li>
-              <li>walked 100km for my birthday — 27 hours, 6,096 calories, zero regrets</li>
+              <li><ImageLink src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours">walked 100km</ImageLink> for my birthday</li>
             </ul>
-            <img src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours" className="w-full rounded opacity-90" />
           </div>
         </div>
       </Section>
