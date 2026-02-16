@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 const blogPosts = [
+  { title: 'I Walked 100km for My Birthday', date: 'Dec 20, 2025', href: '#' },
   { title: 'Software Engineering is Dead', date: 'Feb 16, 2026', href: 'https://coreflow.dev/blog/software-engineering-is-dead.html' },
 ]
 
@@ -77,8 +78,16 @@ function App() {
             <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1">
               <li>🏋️ 1,000lb club — squat 172.5kg · bench 110kg · deadlift 195kg</li>
               <li>🏃 sub 2hr half marathon → chasing a sub 4hr marathon</li>
-              <li>🎾 aspiring best 65+ tennis player — currently terrible at USTA 3.5</li>
+              <li>🎾 aspiring to one day be the world's best 65+ tennis player — currently terrible at USTA 3.5</li>
             </ul>
+          </div>
+          <div>
+            <h3 className="text-xs font-medium text-[#777] uppercase tracking-widest mb-4">Life</h3>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 mb-4">
+              <li>married</li>
+              <li>walked 100km for my birthday — 27 hours, 6,096 calories, zero regrets</li>
+            </ul>
+            <img src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours" className="w-full rounded opacity-90" />
           </div>
         </div>
       </Section>
