@@ -30,7 +30,7 @@ function App() {
           Co-founder{' '}
           <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#888] no-underline border-b border-[#444] transition-colors hover:text-[#e8e8e8] hover:border-[#e8e8e8]">
             coreflow
-          </a>
+          </a>, Sydney Australia
         </p>
         <div className="flex gap-4">
           <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
