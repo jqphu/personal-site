@@ -177,7 +177,7 @@ function ImageLink({ src, alt, children }: {
           onClick={() => setOpen(false)}
         >
           <div className="relative max-w-3xl w-full">
-            <img src={src} alt={alt} className="w-full rounded" />
+            <img src={src} alt={alt} className="max-w-full max-h-[85vh] mx-auto rounded" />
             <button
               onClick={() => setOpen(false)}
               className="absolute -top-8 right-0 text-[#666] hover:text-white text-sm transition-colors cursor-pointer"
