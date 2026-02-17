@@ -10,6 +10,14 @@ interface WhoopWorkout {
     average_heart_rate: number
     max_heart_rate: number
     kilojoule: number
+    zone_durations?: {
+      zone_zero_milli: number
+      zone_one_milli: number
+      zone_two_milli: number
+      zone_three_milli: number
+      zone_four_milli: number
+      zone_five_milli: number
+    }
   }
 }
 
@@ -138,6 +146,57 @@ function WhoopActivities({ data }: { data: WhoopData }) {
       </button>
       <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
+          {(() => {
+            const z = activities.reduce((acc, w) => {
+              const zd = w.score.zone_durations
+              if (!zd) return acc
+              return {
+                low: acc.low + zd.zone_one_milli + zd.zone_two_milli + zd.zone_three_milli,
+                high: acc.high + zd.zone_four_milli + zd.zone_five_milli,
+              }
+            }, { low: 0, high: 0 })
+            const total = z.low + z.high
+            if (total === 0) return null
+              const lowPct = Math.round((z.low / total) * 100)
+              const highPct = Math.round((z.high / total) * 100)
+              const C = 2 * Math.PI * 28
+              const lowArc = (lowPct / 100) * C
+              const highArc = (highPct / 100) * C
+              return (
+                <div className="flex items-center gap-3 text-[10px] mb-3">
+                  <svg width="64" height="64" viewBox="0 0 64 64" className="shrink-0">
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#1a1a1a" strokeWidth="7" />
+                    <circle
+                      cx="32" cy="32" r="28"
+                      fill="none"
+                      stroke="#444"
+                      strokeWidth="7"
+                      strokeDasharray={`${lowArc} ${C - lowArc}`}
+                      transform="rotate(-90 32 32)"
+                    />
+                    <circle
+                      cx="32" cy="32" r="28"
+                      fill="none"
+                      stroke="#A78BCA"
+                      strokeWidth="7"
+                      strokeDasharray={`${highArc} ${C - highArc}`}
+                      strokeDashoffset={`${-lowArc}`}
+                      transform="rotate(-90 32 32)"
+                    />
+                  </svg>
+                  <div className="space-y-1">
+                    <div className="text-[#999] font-light flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#444] shrink-0" />
+                      Zone 1–3: {lowPct}% <span className="text-[#555] ml-1">{msToHours(z.low)}</span>
+                    </div>
+                    <div className="text-[#999] font-light flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#A78BCA] shrink-0" />
+                      Zone 4–5: {highPct}% <span className="text-[#555] ml-1">{msToHours(z.high)}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+          })()}
           <div className="space-y-2">
             {Object.entries(
               activities.reduce<Record<string, WhoopWorkout[]>>((acc, w) => {
@@ -181,8 +240,8 @@ function WhoopStats({ data }: { data: WhoopData | null }) {
     <div>
       <p className="text-[#555] text-[10px] font-light mb-3">whoop · last updated {formatted}</p>
       <div className="grid grid-cols-3 gap-4">
-        <WhoopStat label="Sleep" value={msToHours(totalSleep)}>
-          <p>perf {s.sleep_performance_percentage}%</p>
+        <WhoopStat label="Sleep" value={`${s.sleep_performance_percentage}%`}>
+          <p>{msToHours(totalSleep)} total</p>
           <p>REM {msToHours(stages.total_rem_sleep_time_milli)}</p>
           <p>deep {msToHours(stages.total_slow_wave_sleep_time_milli)}</p>
         </WhoopStat>
