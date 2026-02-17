@@ -192,7 +192,7 @@ function ImageLink({ src, alt, children }: {
 
 function App() {
   return (
-    <div className="max-w-[680px] mx-auto px-6 py-15">
+    <div className="max-w-[680px] mx-auto px-6 pt-6 pb-15">
       <header className="mb-8">
         <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
 
