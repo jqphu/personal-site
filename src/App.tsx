@@ -191,6 +191,68 @@ function ImageLink({ src, alt, children }: {
   )
 }
 
+function VideoLink({ src, children }: {
+  src: string
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!open) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) setLoading(true)
+  }, [open])
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="text-[#888] text-xs font-light no-underline border-b border-dashed border-[#444] transition-colors hover:text-[#e8e8e8] hover:border-[#e8e8e8] cursor-pointer"
+      >
+        {children}
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer"
+          onClick={() => setOpen(false)}
+        >
+          <div className="relative max-w-3xl w-full flex items-center justify-center">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-48 h-80 rounded bg-[#1a1a1a] animate-pulse" />
+              </div>
+            )}
+            <video
+              src={src}
+              autoPlay
+              loop
+
+              playsInline
+              onCanPlay={() => setLoading(false)}
+              className={`max-w-full max-h-[85vh] mx-auto rounded transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute -top-8 right-0 text-[#666] hover:text-white text-sm transition-colors cursor-pointer"
+            >
+              esc
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 function App() {
   return (
     <div className="max-w-[680px] mx-auto px-6 pt-6 pb-15">
@@ -242,7 +304,7 @@ function App() {
           <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Fitness</h2>
           <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
               <li>lifting: 1,000lb total club
-                <p className="ml-4 text-[#666]">squat 172.5kg · bench 110kg · deadlift 195kg</p>
+                <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
               </li>
               <li>running: sub 2hr half
                 <p className="ml-4 text-[#666]">goal: sub 4hr marathon</p>
