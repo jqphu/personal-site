@@ -232,6 +232,7 @@ function VideoLink({ src, children }: {
             )}
             <video
               src={src}
+              controls
               autoPlay
               loop
 
@@ -303,7 +304,7 @@ function App() {
         <section>
           <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Fitness</h2>
           <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
-              <li>lifting: 1,000lb total club
+              <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
                 <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
               </li>
               <li>running: sub 2hr half
