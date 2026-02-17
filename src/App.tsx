@@ -80,7 +80,7 @@ function WhoopStats() {
       .catch(() => {})
   }, [])
 
-  if (!data) return null
+  if (!data) return <div className="h-[72px]" />
 
   const { recovery, sleep, cycle } = data.latest
   const r = recovery.score

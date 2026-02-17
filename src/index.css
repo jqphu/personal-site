@@ -36,6 +36,10 @@
   --font-mono: 'Berkeley Mono', monospace;
 }
 
+html, body {
+  overscroll-behavior: none;
+}
+
 body {
   @apply font-mono bg-[#0a0a0a] text-[#e8e8e8] leading-relaxed;
 }
