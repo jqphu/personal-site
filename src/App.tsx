@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 
 interface WhoopData {
   fetchedAt: string
@@ -257,6 +258,7 @@ function App() {
         </section>
 
       </div>
+      <Analytics />
     </div>
   )
 }

@@ -4,5 +4,8 @@
       "path": "/api/whoop-refresh",
       "schedule": "0 * * * *"
     }
+  ],
+  "rewrites": [
+    { "source": "/blog/:path*", "destination": "https://coreflow.dev/blog/:path*" }
   ]
 }
