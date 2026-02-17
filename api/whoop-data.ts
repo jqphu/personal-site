@@ -18,7 +18,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
     const cached = await kvGet('whoop:data')
     if (!cached) return res.status(404).json({ error: 'No data yet' })
 
-    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400')
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600')
     return res.status(200).json(JSON.parse(cached))
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
