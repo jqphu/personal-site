@@ -196,6 +196,11 @@ function App() {
     <div className="max-w-[680px] mx-auto px-6 pt-6 pb-15">
       <header className="mb-8">
         <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
+        <div className="flex gap-4 mt-1">
+          <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
+          <span className="text-[#444]">·</span>
+          <a href="https://cal.com/justinphu/15min" target="_blank" rel="noopener noreferrer" className="text-[#888] text-sm font-light no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">say hi ↗</a>
+        </div>
 
         <div className="mt-6">
           <WhoopStats />
