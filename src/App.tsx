@@ -94,17 +94,17 @@ function WhoopStats() {
 
   return (
     <div>
-      <p className="text-[#555] text-[10px] font-light mb-3">whoop · {formatted}</p>
+      <p className="text-[#555] text-[10px] font-light mb-3">whoop · last updated {formatted}</p>
       <div className="grid grid-cols-3 gap-4">
-        <WhoopStat label="Recovery" value={`${r.recovery_score}%`}>
-          <p>HRV {r.hrv_rmssd_milli.toFixed(0)}ms</p>
-          <p>RHR {r.resting_heart_rate}bpm</p>
-          <p>SpO2 {r.spo2_percentage.toFixed(1)}%</p>
-        </WhoopStat>
         <WhoopStat label="Sleep" value={msToHours(totalSleep)}>
           <p>perf {s.sleep_performance_percentage}%</p>
           <p>REM {msToHours(stages.total_rem_sleep_time_milli)}</p>
           <p>deep {msToHours(stages.total_slow_wave_sleep_time_milli)}</p>
+        </WhoopStat>
+        <WhoopStat label="Recovery" value={`${r.recovery_score}%`}>
+          <p>HRV {r.hrv_rmssd_milli.toFixed(0)}ms</p>
+          <p>RHR {r.resting_heart_rate}bpm</p>
+          <p>SpO2 {r.spo2_percentage.toFixed(1)}%</p>
         </WhoopStat>
         <WhoopStat label="Strain" value={cycle.score.strain.toFixed(1)}>
           <p>avg HR {cycle.score.average_heart_rate}bpm</p>
@@ -193,12 +193,9 @@ function ImageLink({ src, alt, children }: {
 function App() {
   return (
     <div className="max-w-[680px] mx-auto px-6 py-15">
-      <header className="mb-15">
+      <header className="mb-8">
         <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
-        <div className="flex gap-4 mt-3">
-          <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
-          <a href="https://github.com/jqphu" target="_blank" rel="noopener noreferrer" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">GitHub</a>
-        </div>
+
         <div className="mt-6">
           <WhoopStats />
         </div>
@@ -253,6 +250,7 @@ function App() {
         <section>
           <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Life</h2>
           <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+            <li>29 chronological age, 21.6 whoop age</li>
             <li>married</li>
             <li><ImageLink src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours">walked 100km</ImageLink> for my birthday</li>
           </ul>
