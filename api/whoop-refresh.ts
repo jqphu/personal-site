@@ -56,10 +56,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const token = await refreshTokens()
 
-    const [recovery, sleep, cycle] = await Promise.all([
+    const [recovery, sleep, cycle, workouts] = await Promise.all([
       whoopApi('/v2/recovery?limit=1', token),
       whoopApi('/v2/activity/sleep?limit=1', token),
       whoopApi('/v2/cycle?limit=1', token),
+      whoopApi('/v2/activity/workout?limit=25', token),
     ])
 
     const data = {
@@ -69,6 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         sleep: sleep?.records?.[0] ?? null,
         cycle: cycle?.records?.[0] ?? null,
       },
+      workouts: workouts?.records ?? [],
     }
 
     await kv('SET', 'whoop:data', JSON.stringify(data))

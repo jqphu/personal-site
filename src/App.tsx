@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 
+interface WhoopWorkout {
+  sport_name: string
+  start: string
+  end: string
+  score: {
+    strain: number
+    average_heart_rate: number
+    max_heart_rate: number
+    kilojoule: number
+  }
+}
+
 interface WhoopData {
   fetchedAt: string
   latest: {
@@ -34,6 +46,7 @@ interface WhoopData {
       }
     }
   }
+  workouts?: WhoopWorkout[]
 }
 
 function msToHours(ms: number) {
@@ -69,7 +82,7 @@ function WhoopStat({ label, value, children }: {
   )
 }
 
-function WhoopStats() {
+function useWhoopData() {
   const [data, setData] = useState<WhoopData | null>(null)
 
   useEffect(() => {
@@ -80,6 +93,77 @@ function WhoopStats() {
       .catch(() => {})
   }, [])
 
+  return data
+}
+
+const sportEmoji: Record<string, string> = {
+  running: '🏃',
+  weightlifting: '🏋️',
+  tennis: '🎾',
+  yoga: '🧘',
+  'sprint-training': '⚡',
+}
+
+function WhoopActivities({ data }: { data: WhoopData }) {
+  const [open, setOpen] = useState(false)
+
+  const sevenDaysAgo = new Date(data.fetchedAt)
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+  const activities = (data.workouts ?? []).filter(
+    (w) => w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= sevenDaysAgo
+  )
+
+  if (activities.length === 0) return null
+
+  const counts: Record<string, number> = {}
+  for (const w of activities) {
+    counts[w.sport_name] = (counts[w.sport_name] || 0) + 1
+  }
+  const summary = Object.entries(counts).sort((a, b) => b[1] - a[1])
+
+  return (
+    <div className="mt-4">
+      <p className="text-[#666] text-[10px] uppercase tracking-wider mb-2">Activities <span className="normal-case text-[#555]">(last 7 days)</span></p>
+      <div className="flex flex-wrap gap-3 text-[10px] text-[#999] font-light">
+        {summary.map(([sport, count]) => (
+          <span key={sport} className="grayscale">{sportEmoji[sport] || '💪'} {sport} x{count}</span>
+        ))}
+      </div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="text-[#555] text-[10px] cursor-pointer hover:text-[#999] transition-colors mt-2"
+      >
+        {open ? 'hide details −' : 'details +'}
+      </button>
+      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          <div className="space-y-2">
+            {Object.entries(
+              activities.reduce<Record<string, WhoopWorkout[]>>((acc, w) => {
+                const day = new Date(w.start).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+                ;(acc[day] ??= []).push(w)
+                return acc
+              }, {})
+            ).map(([day, workouts]) => (
+              <div key={day}>
+                <p className="text-[#555] text-[10px] font-light mb-1">{day}</p>
+                {workouts.map((w, i) => (
+                  <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
+                    <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[w.sport_name] || '💪'}</span> {w.sport_name}</span>
+                    <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score.average_heart_rate}bpm avg</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WhoopStats({ data }: { data: WhoopData | null }) {
   if (!data) return <div className="h-[72px]" />
 
   const { recovery, sleep, cycle } = data.latest
@@ -113,6 +197,7 @@ function WhoopStats() {
           <p>{(cycle.score.kilojoule / 4.184).toFixed(0)} cal</p>
         </WhoopStat>
       </div>
+
     </div>
   )
 }
@@ -256,6 +341,8 @@ function VideoLink({ src, children }: {
 }
 
 function App() {
+  const whoopData = useWhoopData()
+
   return (
     <div className="max-w-[680px] mx-auto px-6 pt-6 pb-15">
       <header className="mb-8">
@@ -267,7 +354,8 @@ function App() {
         </div>
 
         <div className="mt-6">
-          <WhoopStats />
+          <WhoopStats data={whoopData} />
+          {whoopData && <WhoopActivities data={whoopData} />}
         </div>
       </header>
 
@@ -308,7 +396,7 @@ function App() {
               <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
                 <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
               </li>
-              <li>running: sub 2hr half
+              <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span>
                 <p className="ml-4 text-[#666]">goal: sub 4hr marathon</p>
               </li>
               <li>tennis: USTA 3.5
