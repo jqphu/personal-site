@@ -226,8 +226,9 @@ function VideoLink({ src, children }: {
         >
           <div className="relative max-w-3xl w-full flex items-center justify-center">
             {loading && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                 <div className="w-48 h-80 rounded bg-[#1a1a1a] animate-pulse" />
+                <p className="text-[#555] text-xs animate-pulse">loading video...</p>
               </div>
             )}
             <video
