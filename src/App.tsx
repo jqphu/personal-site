@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 
 interface WhoopWorkout {
@@ -79,7 +79,7 @@ function WhoopStat({ label, value, children }: {
         <p className="text-[#666] text-[10px] uppercase tracking-wider mb-1 hover:text-[#999] transition-colors">{label}</p>
         <p className="text-sm font-medium">{value}</p>
       </button>
-      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'}`}>
+      <div className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
           <div className="text-[#999] text-[10px] font-light space-y-0.5">
             {children}
@@ -119,6 +119,41 @@ const sportEmoji: Record<string, string> = {
   swimming: '🏊',
 }
 
+function FadeIn({ delay = 0, className = '', children }: {
+  delay?: number
+  className?: string
+  children: React.ReactNode
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      className={`${visible ? 'animate-fade-up' : 'opacity-0'} ${className}`}
+      style={visible ? { animationDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
 function WhoopActivities({ data }: { data: WhoopData }) {
   const [open, setOpen] = useState(false)
 
@@ -139,11 +174,11 @@ function WhoopActivities({ data }: { data: WhoopData }) {
   const summary = Object.entries(counts).sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 animate-fade-in">
       <p className="text-[#666] text-[10px] uppercase tracking-wider mb-2">Activities <span className="normal-case text-[#555]">(last 14 days)</span></p>
       <div className="flex flex-wrap gap-3 text-[10px] text-[#999] font-light">
-        {summary.map(([sport, count]) => (
-          <span key={sport} className="grayscale">{sportEmoji[sport] || '💪'} {sport} x{count}</span>
+        {summary.map(([sport, count], i) => (
+          <span key={sport} className="grayscale animate-fade-up" style={{ animationDelay: `${i * 50}ms` }}>{sportEmoji[sport] || '💪'} {sport} x{count}</span>
         ))}
       </div>
       <button
@@ -152,7 +187,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
       >
         {open ? 'hide details −' : 'details +'}
       </button>
-      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
+      <div className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
           {(() => {
             const z = activities.reduce((acc, w) => {
@@ -174,51 +209,58 @@ function WhoopActivities({ data }: { data: WhoopData }) {
               const midArc = (midPct / 100) * C
               const highArc = (highPct / 100) * C
               return (
-                <div className="flex items-center gap-3 text-[10px] mb-3">
-                  <svg width="64" height="64" viewBox="0 0 64 64" className="shrink-0">
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#1a1a1a" strokeWidth="7" />
-                    <circle
-                      cx="32" cy="32" r="28"
-                      fill="none"
-                      stroke="#444"
-                      strokeWidth="7"
-                      strokeDasharray={`${lowArc} ${C - lowArc}`}
-                      transform="rotate(-90 32 32)"
-                    />
-                    <circle
-                      cx="32" cy="32" r="28"
-                      fill="none"
-                      stroke="#777"
-                      strokeWidth="7"
-                      strokeDasharray={`${midArc} ${C - midArc}`}
-                      strokeDashoffset={`${-lowArc}`}
-                      transform="rotate(-90 32 32)"
-                    />
-                    <circle
-                      cx="32" cy="32" r="28"
-                      fill="none"
-                      stroke="#A78BCA"
-                      strokeWidth="7"
-                      strokeDasharray={`${highArc} ${C - highArc}`}
-                      strokeDashoffset={`${-(lowArc + midArc)}`}
-                      transform="rotate(-90 32 32)"
-                    />
-                  </svg>
-                  <div className="space-y-1">
-                    <div className="text-[#999] font-light flex items-center gap-1.5">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#444] shrink-0" />
-                      Zone 1–2: {lowPct}% <span className="text-[#555] ml-1">{msToHours(z.low)}</span>
-                    </div>
-                    <div className="text-[#999] font-light flex items-center gap-1.5">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#777] shrink-0" />
-                      Zone 3: {midPct}% <span className="text-[#555] ml-1">{msToHours(z.mid)}</span>
-                    </div>
-                    <div className="text-[#999] font-light flex items-center gap-1.5">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#A78BCA] shrink-0" />
-                      Zone 4–5: {highPct}% <span className="text-[#555] ml-1">{msToHours(z.high)}</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-[10px] mb-3">
+                  <div className="flex items-center gap-3">
+                    <svg width="64" height="64" viewBox="0 0 64 64" className="shrink-0">
+                      <circle cx="32" cy="32" r="28" fill="none" stroke="#1a1a1a" strokeWidth="7" />
+                      <circle
+                        cx="32" cy="32" r="28"
+                        fill="none"
+                        stroke="#444"
+                        strokeWidth="7"
+                        strokeDasharray={`${lowArc} ${C - lowArc}`}
+                        strokeDashoffset={C}
+                        transform="rotate(-90 32 32)"
+                        className="animate-ring-draw"
+                        style={{ '--ring-circumference': C, '--ring-offset': 0 } as React.CSSProperties}
+                      />
+                      <circle
+                        cx="32" cy="32" r="28"
+                        fill="none"
+                        stroke="#777"
+                        strokeWidth="7"
+                        strokeDasharray={`${midArc} ${C - midArc}`}
+                        strokeDashoffset={C}
+                        transform="rotate(-90 32 32)"
+                        className="animate-ring-draw"
+                        style={{ '--ring-circumference': C, '--ring-offset': -lowArc, animationDelay: '0.15s' } as React.CSSProperties}
+                      />
+                      <circle
+                        cx="32" cy="32" r="28"
+                        fill="none"
+                        stroke="#A78BCA"
+                        strokeWidth="7"
+                        strokeDasharray={`${highArc} ${C - highArc}`}
+                        strokeDashoffset={C}
+                        transform="rotate(-90 32 32)"
+                        className="animate-ring-draw"
+                        style={{ '--ring-circumference': C, '--ring-offset': -(lowArc + midArc), animationDelay: '0.3s' } as React.CSSProperties}
+                      />
+                    </svg>
+                    <div className="space-y-1">
+                      {[
+                        { label: 'Zone 1–2', pct: lowPct, ms: z.low, color: 'bg-[#444]' },
+                        { label: 'Zone 3', pct: midPct, ms: z.mid, color: 'bg-[#777]' },
+                        { label: 'Zone 4–5', pct: highPct, ms: z.high, color: 'bg-[#A78BCA]' },
+                      ].map(({ label, pct, ms: zoneMs, color }, i) => (
+                        <div key={label} className="text-[#999] font-light flex items-center gap-1.5 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                          <span className={`inline-block w-1.5 h-1.5 rounded-full ${color} shrink-0`} />
+                          {label}: {pct}% <span className="text-[#555] ml-1">{msToHours(zoneMs)}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="border-l border-[#222] pl-3 space-y-1">
+                  <div className="border-t sm:border-t-0 sm:border-l border-[#222] pt-3 sm:pt-0 sm:pl-3 space-y-1">
                     {Object.entries(
                       activities.reduce<Record<string, number>>((acc, w) => {
                         const sport = normalizeSport(w.sport_name)
@@ -228,8 +270,8 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                       }, {})
                     )
                       .sort(([, a], [, b]) => b - a)
-                      .map(([sport, ms]) => (
-                        <div key={sport} className="text-[#999] font-light flex items-center gap-1.5">
+                      .map(([sport, ms], i) => (
+                        <div key={sport} className="text-[#999] font-light flex items-center gap-1.5 animate-fade-up" style={{ animationDelay: `${150 + i * 60}ms` }}>
                           <span className="shrink-0">{sportEmoji[sport] ?? '💪'}</span>
                           <span>{sport}</span>
                           <span className="text-[#555] ml-auto">{msToHours(ms)}</span>
@@ -240,23 +282,32 @@ function WhoopActivities({ data }: { data: WhoopData }) {
               )
           })()}
           <div className="space-y-2">
-            {Object.entries(
-              activities.reduce<Record<string, WhoopWorkout[]>>((acc, w) => {
-                const day = new Date(w.start).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
-                ;(acc[day] ??= []).push(w)
-                return acc
-              }, {})
-            ).map(([day, workouts]) => (
-              <div key={day}>
-                <p className="text-[#555] text-[10px] font-light mb-1">{day}</p>
-                {workouts.map((w, i) => (
-                  <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
-                    <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(w.sport_name)] || '💪'}</span> {normalizeSport(w.sport_name)}</span>
-                    <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score.average_heart_rate}bpm avg</span>
+            {(() => {
+              let itemIndex = 0
+              return Object.entries(
+                activities.reduce<Record<string, WhoopWorkout[]>>((acc, w) => {
+                  const day = new Date(w.start).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+                  ;(acc[day] ??= []).push(w)
+                  return acc
+                }, {})
+              ).map(([day, workouts]) => {
+                const dayDelay = itemIndex * 40
+                return (
+                  <div key={day} className="animate-fade-up" style={{ animationDelay: `${300 + dayDelay}ms` }}>
+                    <p className="text-[#555] text-[10px] font-light mb-1">{day}</p>
+                    {workouts.map((w, i) => {
+                      itemIndex++
+                      return (
+                        <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
+                          <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(w.sport_name)] || '💪'}</span> {normalizeSport(w.sport_name)}</span>
+                          <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score.average_heart_rate}bpm avg</span>
+                        </div>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
-            ))}
+                )
+              })
+            })()}
           </div>
         </div>
       </div>
@@ -279,7 +330,7 @@ function WhoopStats({ data }: { data: WhoopData | null }) {
   const formatted = `${time}, ${date}`
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <p className="text-[#555] text-[10px] font-light mb-3">whoop · last updated {formatted}</p>
       <div className="grid grid-cols-3 gap-4">
         <WhoopStat label="Sleep" value={`${s.sleep_performance_percentage}%`}>
@@ -315,7 +366,7 @@ function BlogSection() {
       <button onClick={() => setOpen(!open)} className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4 cursor-pointer hover:text-[#c4a8e6] transition-colors flex items-center gap-2">
         Blog <span className="text-[#555] text-[10px]">{open ? '−' : '+'}</span>
       </button>
-      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+      <div className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className="overflow-hidden">
           <ul className="list-none">
             {blogPosts.map((post) => (
@@ -359,10 +410,10 @@ function ImageLink({ src, alt, children }: {
       </button>
       {open && (
         <div
-          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer"
+          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer animate-lightbox-backdrop"
           onClick={() => setOpen(false)}
         >
-          <div className="relative max-w-3xl w-full">
+          <div className="relative max-w-3xl w-full animate-lightbox-content">
             <img src={src} alt={alt} className="max-w-full max-h-[85vh] mx-auto rounded" />
             <button
               onClick={() => setOpen(false)}
@@ -407,10 +458,10 @@ function VideoLink({ src, children }: {
       </button>
       {open && (
         <div
-          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer"
+          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer animate-lightbox-backdrop"
           onClick={() => setOpen(false)}
         >
-          <div className="relative max-w-3xl w-full flex items-center justify-center">
+          <div className="relative max-w-3xl w-full flex items-center justify-center animate-lightbox-content">
             {loading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                 <div className="w-48 h-80 rounded bg-[#1a1a1a] animate-pulse" />
@@ -447,95 +498,106 @@ function App() {
   return (
     <div className="max-w-[680px] mx-auto px-6 pt-6 pb-15">
       <header className="mb-8">
-        <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
-        <div className="flex gap-4 mt-1">
-          <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
+        <FadeIn>
+          <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
+          <div className="flex gap-4 mt-1">
+            <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
+          </div>
+        </FadeIn>
 
-        </div>
-
-        <div className="mt-6">
+        <FadeIn delay={100} className="mt-6">
           <WhoopStats data={whoopData} />
           {whoopData && <WhoopActivities data={whoopData} />}
-        </div>
+        </FadeIn>
       </header>
 
       <div className="space-y-10">
-        <BlogSection />
+        <FadeIn delay={200}>
+          <BlogSection />
+        </FadeIn>
 
-        <section>
-          <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4"><a href="https://www.linkedin.com/in/justin-phu/" target="_blank" rel="noopener noreferrer" className="text-[#A78BCA] no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">Career ↗</a></h2>
-          <div className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium">Co-Founder, <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">coreflow ↗</a></p>
-              <span className="text-[#777] text-xs shrink-0 ml-4">2025 –</span>
+        <FadeIn>
+          <section>
+            <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4"><a href="https://www.linkedin.com/in/justin-phu/" target="_blank" rel="noopener noreferrer" className="text-[#A78BCA] no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">Career ↗</a></h2>
+            <div className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Co-Founder, <a href="https://coreflow.dev" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">coreflow ↗</a></p>
+                <span className="text-[#777] text-xs shrink-0 ml-4">2025 –</span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Co-Founder, <a href="https://pocketuniverse.app" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">Pocket Universe ↗</a> <span className="text-[#777] text-xs font-light italic">(Acq.)</span></p>
+                <span className="text-[#777] text-xs shrink-0 ml-2">2022 – 2025</span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <p className="text-sm font-medium">Staff Engineer, Facebook</p>
+                <span className="text-[#777] text-xs shrink-0 ml-4">2019 – 2022</span>
+              </div>
             </div>
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium">Co-Founder, <a href="https://pocketuniverse.app" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">Pocket Universe ↗</a> <span className="text-[#777] text-xs font-light italic">(Acq.)</span></p>
-              <span className="text-[#777] text-xs shrink-0 ml-2">2022 – 2025</span>
-            </div>
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm font-medium">Staff Engineer, Facebook</p>
-              <span className="text-[#777] text-xs shrink-0 ml-4">2019 – 2022</span>
-            </div>
-          </div>
-        </section>
+          </section>
+        </FadeIn>
 
-        <section>
-          <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Values</h2>
-          <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
-            <li>grit. <ImageLink src="/github-contributions.png" alt="GitHub contributions 2022–2026">keep building.</ImageLink></li>
-            <li>have fun, it's easier. <ImageLink src="https://images.prismic.io/sketchplanations/281df432-3a48-4e78-ac58-1ff835091f99_SP+582+-+The+fun+scale+-+revised.png?auto=format%2Ccompress&fit=max&w=1920" alt="The fun scale — Type 1, 2, and 3 fun explained">type 2 fun.</ImageLink></li>
-            <li>who you work with &gt;&gt; everything else</li>
-            <li>never satisfied. always faster. always better.</li>
-          </ul>
-        </section>
+        <FadeIn>
+          <section>
+            <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Values</h2>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+              <li>grit. <ImageLink src="/github-contributions.png" alt="GitHub contributions 2022–2026">keep building.</ImageLink></li>
+              <li>have fun, it's easier. <ImageLink src="https://images.prismic.io/sketchplanations/281df432-3a48-4e78-ac58-1ff835091f99_SP+582+-+The+fun+scale+-+revised.png?auto=format%2Ccompress&fit=max&w=1920" alt="The fun scale — Type 1, 2, and 3 fun explained">type 2 fun.</ImageLink></li>
+              <li>who you work with &gt;&gt; everything else</li>
+              <li>never satisfied. always faster. always better.</li>
+            </ul>
+          </section>
+        </FadeIn>
 
-        <section>
-          <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Fitness</h2>
-          <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
-              <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
-                <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
-              </li>
-              <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span></li>
-              <li>tennis: USTA 3.5
-                <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
-              </li>
-          </ul>
-          <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
-          <div className="space-y-2">
-            {[
-              { name: 'Western Sydney Half Ironman', date: '2026-05-03' },
-              { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
-              { name: 'Ironman', date: '2026-12-06', tbd: true },
-            ].map(({ name, date, tbd, goal }) => {
-              const target = new Date(date)
-              const now = new Date()
-              const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
-              const weeks = Math.floor(totalDays / 7)
-              const days = totalDays % 7
-              const monthDay = target.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })
-              const countdown = weeks > 0 ? `${weeks}w ${days}d` : `${days}d`
-              return (
-                <div key={name}>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[#999] text-xs font-light">{name}</span>
-                    <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+        <FadeIn>
+          <section>
+            <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Fitness</h2>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+                <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
+                  <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
+                </li>
+                <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span></li>
+                <li>tennis: USTA 3.5
+                  <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
+                </li>
+            </ul>
+            <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
+            <div className="space-y-2">
+              {[
+                { name: 'Western Sydney Half Ironman', date: '2026-05-03' },
+                { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
+                { name: 'Ironman', date: '2026-12-06', tbd: true },
+              ].map(({ name, date, tbd, goal }) => {
+                const target = new Date(date)
+                const now = new Date()
+                const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
+                const weeks = Math.floor(totalDays / 7)
+                const days = totalDays % 7
+                const monthDay = target.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })
+                const countdown = weeks > 0 ? `${weeks}w ${days}d` : `${days}d`
+                return (
+                  <div key={name}>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-[#999] text-xs font-light">{name}</span>
+                      <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+                    </div>
+                    {goal && <span className="text-[#666] text-[10px] font-light">goal: {goal}</span>}
                   </div>
-                  {goal && <span className="text-[#666] text-[10px] font-light">goal: {goal}</span>}
-                </div>
-              )
-            })}
-          </div>
-        </section>
+                )
+              })}
+            </div>
+          </section>
+        </FadeIn>
 
-        <section>
-          <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Life</h2>
-          <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
-            <li>29 chronological age, 21.6 whoop age</li>
-            <li>married</li>
-            <li><ImageLink src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours">walked 100km</ImageLink> for my birthday</li>
-          </ul>
-        </section>
+        <FadeIn>
+          <section>
+            <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Life</h2>
+            <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
+              <li>29 chronological age, 21.6 whoop age</li>
+              <li>married</li>
+              <li><ImageLink src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours">walked 100km</ImageLink> for my birthday</li>
+            </ul>
+          </section>
+        </FadeIn>
 
       </div>
       <Analytics />
