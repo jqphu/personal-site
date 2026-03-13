@@ -483,9 +483,9 @@ function App() {
           <div className="space-y-2">
             {[
               { name: 'Western Sydney Half Ironman', date: '2026-05-03' },
-              { name: 'Sydney Marathon', date: '2026-08-30' },
+              { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
               { name: 'Ironman', date: '2026-12-06', tbd: true },
-            ].map(({ name, date, tbd }) => {
+            ].map(({ name, date, tbd, goal }) => {
               const target = new Date(date)
               const now = new Date()
               const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
@@ -494,9 +494,12 @@ function App() {
               const monthDay = target.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })
               const countdown = weeks > 0 ? `${weeks}w ${days}d` : `${days}d`
               return (
-                <div key={name} className="flex items-baseline justify-between">
-                  <span className="text-[#999] text-xs font-light">{name}</span>
-                  <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+                <div key={name}>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[#999] text-xs font-light">{name}</span>
+                    <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+                  </div>
+                  {goal && <span className="text-[#666] text-[10px] font-light">goal: {goal}</span>}
                 </div>
               )
             })}
