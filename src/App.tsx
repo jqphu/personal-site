@@ -104,6 +104,11 @@ function useWhoopData() {
   return data
 }
 
+function normalizeSport(name: string): string {
+  if (name === 'weightlifting_msk' || name === 'powerlifting') return 'weightlifting'
+  return name
+}
+
 const sportEmoji: Record<string, string> = {
   running: '🏃',
   weightlifting: '🏋️',
@@ -128,7 +133,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
 
   const counts: Record<string, number> = {}
   for (const w of activities) {
-    const name = w.sport_name === 'weightlifting_msk' ? 'weightlifting' : w.sport_name
+    const name = normalizeSport(w.sport_name)
     counts[name] = (counts[name] || 0) + 1
   }
   const summary = Object.entries(counts).sort((a, b) => b[1] - a[1])
@@ -216,7 +221,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                   <div className="border-l border-[#222] pl-3 space-y-1">
                     {Object.entries(
                       activities.reduce<Record<string, number>>((acc, w) => {
-                        const sport = w.sport_name === 'weightlifting_msk' ? 'weightlifting' : w.sport_name
+                        const sport = normalizeSport(w.sport_name)
                         const ms = new Date(w.end).getTime() - new Date(w.start).getTime()
                         acc[sport] = (acc[sport] ?? 0) + ms
                         return acc
@@ -246,7 +251,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                 <p className="text-[#555] text-[10px] font-light mb-1">{day}</p>
                 {workouts.map((w, i) => (
                   <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
-                    <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[w.sport_name] || '💪'}</span> {w.sport_name}</span>
+                    <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(w.sport_name)] || '💪'}</span> {normalizeSport(w.sport_name)}</span>
                     <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score.average_heart_rate}bpm avg</span>
                   </div>
                 ))}
