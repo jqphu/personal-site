@@ -56,12 +56,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const token = await refreshTokens()
 
-    const [recovery, sleep, cycle, workouts] = await Promise.all([
+    const [recovery, sleep, cycle] = await Promise.all([
       whoopApi('/v2/recovery?limit=1', token),
       whoopApi('/v2/activity/sleep?limit=1', token),
       whoopApi('/v2/cycle?limit=1', token),
-      whoopApi('/v2/activity/workout?limit=100', token),
     ])
+
+    // Paginate workouts (API caps at 25 per request)
+    const allWorkouts: unknown[] = []
+    let nextToken: string | undefined
+    do {
+      const params = new URLSearchParams({ limit: '25' })
+      if (nextToken) params.set('nextToken', nextToken)
+      const page = await whoopApi(`/v2/activity/workout?${params}`, token)
+      if (!page) break
+      allWorkouts.push(...(page.records ?? []))
+      nextToken = page.next_token
+    } while (nextToken && allWorkouts.length < 100)
 
     const data = {
       fetchedAt: new Date().toISOString(),
@@ -70,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         sleep: sleep?.records?.[0] ?? null,
         cycle: cycle?.records?.[0] ?? null,
       },
-      workouts: workouts?.records ?? [],
+      workouts: allWorkouts,
     }
 
     await kv('SET', 'whoop:data', JSON.stringify(data))
