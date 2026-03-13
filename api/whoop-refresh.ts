@@ -60,7 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       whoopApi('/v2/recovery?limit=1', token),
       whoopApi('/v2/activity/sleep?limit=1', token),
       whoopApi('/v2/cycle?limit=1', token),
-      whoopApi('/v2/activity/workout?limit=50', token),
+      whoopApi('/v2/activity/workout?limit=100', token),
     ])
 
     const data = {
