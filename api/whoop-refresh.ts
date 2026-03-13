@@ -77,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       allWorkouts.push(...records)
       nextToken = page.next_token
       hasOldEnough = records.some((r: { start: string }) => new Date(r.start) < fourteenDaysAgo)
-    } while (nextToken && !hasOldEnough)
+    } while (nextToken && !hasOldEnough && allWorkouts.length < 250)
 
     const data = {
       fetchedAt: new Date().toISOString(),
