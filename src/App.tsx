@@ -213,6 +213,24 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                       Zone 4–5: {highPct}% <span className="text-[#555] ml-1">{msToHours(z.high)}</span>
                     </div>
                   </div>
+                  <div className="border-l border-[#222] pl-3 space-y-1">
+                    {Object.entries(
+                      activities.reduce<Record<string, number>>((acc, w) => {
+                        const sport = w.sport_name === 'weightlifting_msk' ? 'weightlifting' : w.sport_name
+                        const ms = new Date(w.end).getTime() - new Date(w.start).getTime()
+                        acc[sport] = (acc[sport] ?? 0) + ms
+                        return acc
+                      }, {})
+                    )
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([sport, ms]) => (
+                        <div key={sport} className="text-[#999] font-light flex items-center gap-1.5">
+                          <span className="shrink-0">{sportEmoji[sport] ?? '💪'}</span>
+                          <span>{sport}</span>
+                          <span className="text-[#555] ml-auto">{msToHours(ms)}</span>
+                        </div>
+                      ))}
+                  </div>
                 </div>
               )
           })()}
@@ -427,8 +445,7 @@ function App() {
         <h1 className="text-xl font-medium mb-1">Justin Phu</h1>
         <div className="flex gap-4 mt-1">
           <a href="mailto:justin@phu.dev" className="text-[#888] text-sm font-light no-underline transition-colors hover:text-[#e8e8e8]">justin@phu.dev</a>
-          <span className="text-[#444]">·</span>
-          <a href="https://cal.com/justinphu/15min" target="_blank" rel="noopener noreferrer" className="text-[#888] text-sm font-light no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">say hi ↗</a>
+
         </div>
 
         <div className="mt-6">
