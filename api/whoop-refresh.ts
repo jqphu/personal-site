@@ -62,17 +62,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       whoopApi('/v2/cycle?limit=1', token),
     ])
 
-    // Paginate workouts (API caps at 25 per request)
+    // Paginate workouts until we have 14 days of data
     const allWorkouts: unknown[] = []
+    const fourteenDaysAgo = new Date()
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
     let nextToken: string | undefined
+    let hasOldEnough = false
     do {
       const params = new URLSearchParams({ limit: '25' })
       if (nextToken) params.set('nextToken', nextToken)
       const page = await whoopApi(`/v2/activity/workout?${params}`, token)
       if (!page) break
-      allWorkouts.push(...(page.records ?? []))
+      const records = page.records ?? []
+      allWorkouts.push(...records)
       nextToken = page.next_token
-    } while (nextToken && allWorkouts.length < 100)
+      hasOldEnough = records.some((r: { start: string }) => new Date(r.start) < fourteenDaysAgo)
+    } while (nextToken && !hasOldEnough)
 
     const data = {
       fetchedAt: new Date().toISOString(),
