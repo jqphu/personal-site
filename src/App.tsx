@@ -110,29 +110,32 @@ const sportEmoji: Record<string, string> = {
   tennis: '🎾',
   yoga: '🧘',
   'sprint-training': '⚡',
+  cycling: '🚴',
+  swimming: '🏊',
 }
 
 function WhoopActivities({ data }: { data: WhoopData }) {
   const [open, setOpen] = useState(false)
 
-  const sevenDaysAgo = new Date(data.fetchedAt)
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const fourteenDaysAgo = new Date(data.fetchedAt)
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
 
   const activities = (data.workouts ?? []).filter(
-    (w) => w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= sevenDaysAgo
+    (w) => w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= fourteenDaysAgo
   )
 
   if (activities.length === 0) return null
 
   const counts: Record<string, number> = {}
   for (const w of activities) {
-    counts[w.sport_name] = (counts[w.sport_name] || 0) + 1
+    const name = w.sport_name === 'weightlifting_msk' ? 'weightlifting' : w.sport_name
+    counts[name] = (counts[name] || 0) + 1
   }
   const summary = Object.entries(counts).sort((a, b) => b[1] - a[1])
 
   return (
     <div className="mt-4">
-      <p className="text-[#666] text-[10px] uppercase tracking-wider mb-2">Activities <span className="normal-case text-[#555]">(last 7 days)</span></p>
+      <p className="text-[#666] text-[10px] uppercase tracking-wider mb-2">Activities <span className="normal-case text-[#555]">(last 14 days)</span></p>
       <div className="flex flex-wrap gap-3 text-[10px] text-[#999] font-light">
         {summary.map(([sport, count]) => (
           <span key={sport} className="grayscale">{sportEmoji[sport] || '💪'} {sport} x{count}</span>
@@ -151,16 +154,19 @@ function WhoopActivities({ data }: { data: WhoopData }) {
               const zd = w.score.zone_durations
               if (!zd) return acc
               return {
-                low: acc.low + zd.zone_one_milli + zd.zone_two_milli + zd.zone_three_milli,
+                low: acc.low + zd.zone_one_milli + zd.zone_two_milli,
+                mid: acc.mid + zd.zone_three_milli,
                 high: acc.high + zd.zone_four_milli + zd.zone_five_milli,
               }
-            }, { low: 0, high: 0 })
-            const total = z.low + z.high
+            }, { low: 0, mid: 0, high: 0 })
+            const total = z.low + z.mid + z.high
             if (total === 0) return null
               const lowPct = Math.round((z.low / total) * 100)
+              const midPct = Math.round((z.mid / total) * 100)
               const highPct = Math.round((z.high / total) * 100)
               const C = 2 * Math.PI * 28
               const lowArc = (lowPct / 100) * C
+              const midArc = (midPct / 100) * C
               const highArc = (highPct / 100) * C
               return (
                 <div className="flex items-center gap-3 text-[10px] mb-3">
@@ -177,17 +183,30 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                     <circle
                       cx="32" cy="32" r="28"
                       fill="none"
+                      stroke="#777"
+                      strokeWidth="7"
+                      strokeDasharray={`${midArc} ${C - midArc}`}
+                      strokeDashoffset={`${-lowArc}`}
+                      transform="rotate(-90 32 32)"
+                    />
+                    <circle
+                      cx="32" cy="32" r="28"
+                      fill="none"
                       stroke="#A78BCA"
                       strokeWidth="7"
                       strokeDasharray={`${highArc} ${C - highArc}`}
-                      strokeDashoffset={`${-lowArc}`}
+                      strokeDashoffset={`${-(lowArc + midArc)}`}
                       transform="rotate(-90 32 32)"
                     />
                   </svg>
                   <div className="space-y-1">
                     <div className="text-[#999] font-light flex items-center gap-1.5">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#444] shrink-0" />
-                      Zone 1–3: {lowPct}% <span className="text-[#555] ml-1">{msToHours(z.low)}</span>
+                      Zone 1–2: {lowPct}% <span className="text-[#555] ml-1">{msToHours(z.low)}</span>
+                    </div>
+                    <div className="text-[#999] font-light flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#777] shrink-0" />
+                      Zone 3: {midPct}% <span className="text-[#555] ml-1">{msToHours(z.mid)}</span>
                     </div>
                     <div className="text-[#999] font-light flex items-center gap-1.5">
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#A78BCA] shrink-0" />
@@ -455,13 +474,33 @@ function App() {
               <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
                 <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
               </li>
-              <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span>
-                <p className="ml-4 text-[#666]">goal: sub 4hr marathon</p>
-              </li>
+              <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span></li>
               <li>tennis: USTA 3.5
                 <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
               </li>
           </ul>
+          <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
+          <div className="space-y-2">
+            {[
+              { name: 'Western Sydney Half Ironman', date: '2026-05-03' },
+              { name: 'Sydney Marathon', date: '2026-08-30' },
+              { name: 'Ironman', date: '2026-12-06', tbd: true },
+            ].map(({ name, date, tbd }) => {
+              const target = new Date(date)
+              const now = new Date()
+              const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
+              const weeks = Math.floor(totalDays / 7)
+              const days = totalDays % 7
+              const monthDay = target.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })
+              const countdown = weeks > 0 ? `${weeks}w ${days}d` : `${days}d`
+              return (
+                <div key={name} className="flex items-baseline justify-between">
+                  <span className="text-[#999] text-xs font-light">{name}</span>
+                  <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+                </div>
+              )
+            })}
+          </div>
         </section>
 
         <section>
