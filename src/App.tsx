@@ -18,7 +18,7 @@ interface WhoopWorkout {
       zone_four_milli: number
       zone_five_milli: number
     }
-  }
+  } | null
 }
 
 interface WhoopData {
@@ -51,7 +51,7 @@ interface WhoopData {
         kilojoule: number
         average_heart_rate: number
         max_heart_rate: number
-      }
+      } | null
     }
   }
   workouts?: WhoopWorkout[]
@@ -161,7 +161,8 @@ function WhoopActivities({ data }: { data: WhoopData }) {
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
 
   const activities = (data.workouts ?? []).filter(
-    (w) => w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= fourteenDaysAgo
+    (w): w is WhoopWorkout & { score: NonNullable<WhoopWorkout['score']> } =>
+      w.score != null && w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= fourteenDaysAgo
   )
 
   if (activities.length === 0) return null
@@ -300,7 +301,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
                       return (
                         <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
                           <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(w.sport_name)] || '💪'}</span> {normalizeSport(w.sport_name)}</span>
-                          <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score.average_heart_rate}bpm avg</span>
+                          <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score?.average_heart_rate ?? '—'}bpm avg</span>
                         </div>
                       )
                     })}
@@ -343,11 +344,13 @@ function WhoopStats({ data }: { data: WhoopData | null }) {
           <p>RHR {r.resting_heart_rate}bpm</p>
           <p>SpO2 {r.spo2_percentage.toFixed(1)}%</p>
         </WhoopStat>
-        <WhoopStat label="Strain" value={cycle.score.strain.toFixed(1)}>
-          <p>avg HR {cycle.score.average_heart_rate}bpm</p>
-          <p>max HR {cycle.score.max_heart_rate}bpm</p>
-          <p>{(cycle.score.kilojoule / 4.184).toFixed(0)} cal</p>
-        </WhoopStat>
+        {cycle.score && (
+          <WhoopStat label="Strain" value={cycle.score.strain.toFixed(1)}>
+            <p>avg HR {cycle.score.average_heart_rate}bpm</p>
+            <p>max HR {cycle.score.max_heart_rate}bpm</p>
+            <p>{(cycle.score.kilojoule / 4.184).toFixed(0)} cal</p>
+          </WhoopStat>
+        )}
       </div>
 
     </div>
