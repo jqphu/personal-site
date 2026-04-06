@@ -1,60 +1,105 @@
 import { useEffect, useRef, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 
+interface WhoopWorkoutScore {
+  strain: number
+  average_heart_rate: number
+  max_heart_rate: number
+  kilojoule: number
+  zone_durations?: {
+    zone_zero_milli: number
+    zone_one_milli: number
+    zone_two_milli: number
+    zone_three_milli: number
+    zone_four_milli: number
+    zone_five_milli: number
+  }
+}
+
 interface WhoopWorkout {
   sport_name: string
   start: string
   end: string
-  score: {
-    strain: number
-    average_heart_rate: number
-    max_heart_rate: number
-    kilojoule: number
-    zone_durations?: {
-      zone_zero_milli: number
-      zone_one_milli: number
-      zone_two_milli: number
-      zone_three_milli: number
-      zone_four_milli: number
-      zone_five_milli: number
-    }
-  } | null
+  score: WhoopWorkoutScore | null
+}
+
+interface WhoopRecoveryScore {
+  recovery_score: number
+  resting_heart_rate: number
+  hrv_rmssd_milli: number
+  spo2_percentage: number
+  skin_temp_celsius: number
+}
+
+interface WhoopRecovery {
+  cycle_id: number
+  created_at: string
+  score_state: string
+  score: WhoopRecoveryScore
+}
+
+interface WhoopSleepStageSummary {
+  total_in_bed_time_milli: number
+  total_awake_time_milli: number
+  total_light_sleep_time_milli: number
+  total_slow_wave_sleep_time_milli: number
+  total_rem_sleep_time_milli: number
+}
+
+interface WhoopSleepScore {
+  sleep_performance_percentage: number
+  stage_summary: WhoopSleepStageSummary
+}
+
+interface WhoopSleep {
+  cycle_id: number
+  created_at: string
+  end: string
+  score_state: string
+  score: WhoopSleepScore
+}
+
+interface WhoopCycleScore {
+  strain: number
+  kilojoule: number
+  average_heart_rate: number
+  max_heart_rate: number
+}
+
+interface WhoopCycle {
+  id: number
+  created_at: string
+  start: string
+  end: string | null
+  score_state: string
+  score: WhoopCycleScore | null
 }
 
 interface WhoopData {
   fetchedAt: string
   latest: {
-    recovery: {
-      score: {
-        recovery_score: number
-        resting_heart_rate: number
-        hrv_rmssd_milli: number
-        spo2_percentage: number
-        skin_temp_celsius: number
-      }
-    }
-    sleep: {
-      score: {
-        sleep_performance_percentage: number
-        stage_summary: {
-          total_in_bed_time_milli: number
-          total_awake_time_milli: number
-          total_light_sleep_time_milli: number
-          total_slow_wave_sleep_time_milli: number
-          total_rem_sleep_time_milli: number
-        }
-      }
-    }
-    cycle: {
-      score: {
-        strain: number
-        kilojoule: number
-        average_heart_rate: number
-        max_heart_rate: number
-      } | null
-    }
+    recovery: WhoopRecovery
+    sleep: WhoopSleep
+    cycle: WhoopCycle
   }
+  recoveries?: WhoopRecovery[]
+  sleeps?: WhoopSleep[]
+  cycles?: WhoopCycle[]
   workouts?: WhoopWorkout[]
+}
+
+type WhoopMetric = 'sleep' | 'recovery' | 'strain'
+
+type ScoredWorkout = WhoopWorkout & { score: WhoopWorkoutScore }
+
+interface WhoopHistoryDay {
+  key: string
+  label: string
+  shortLabel: string
+  sleepScore: number | null
+  recoveryScore: number | null
+  strainScore: number | null
+  workouts: ScoredWorkout[]
 }
 
 function msToHours(ms: number) {
@@ -63,29 +108,119 @@ function msToHours(ms: number) {
   return `${h}h ${m}m`
 }
 
-function WhoopStat({ label, value, children }: {
+function formatMinutes(ms: number) {
+  const h = Math.floor(ms / 3_600_000)
+  const m = Math.floor((ms % 3_600_000) / 60_000)
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+function toDayKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDayLabel(date: Date) {
+  return date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function formatShortDayLabel(date: Date) {
+  return date.toLocaleDateString('en-AU', { weekday: 'short' })
+}
+
+function getMetricValue(day: WhoopHistoryDay, metric: WhoopMetric) {
+  if (metric === 'sleep') return day.sleepScore
+  if (metric === 'recovery') return day.recoveryScore
+  return day.strainScore
+}
+
+function formatMetricValue(metric: WhoopMetric, value: number | null) {
+  if (value == null) return '—'
+  return metric === 'strain' ? value.toFixed(1) : `${Math.round(value)}%`
+}
+
+function formatMetricLabel(metric: WhoopMetric, value: number | null) {
+  return `${metric} ${formatMetricValue(metric, value)}`
+}
+
+function getMetricScale(metric: WhoopMetric) {
+  return metric === 'strain' ? 21 : 100
+}
+
+function isScoredWorkout(workout: WhoopWorkout): workout is ScoredWorkout {
+  return workout.score != null
+}
+
+function buildWhoopHistoryDays(data: WhoopData): WhoopHistoryDay[] {
+  const endDate = new Date(data.fetchedAt)
+  endDate.setHours(0, 0, 0, 0)
+
+  const days: WhoopHistoryDay[] = Array.from({ length: 14 }, (_, index) => {
+    const date = new Date(endDate)
+    date.setDate(endDate.getDate() - (13 - index))
+    return {
+      key: toDayKey(date),
+      label: formatDayLabel(date),
+      shortLabel: formatShortDayLabel(date),
+      sleepScore: null,
+      recoveryScore: null,
+      strainScore: null,
+      workouts: [] as ScoredWorkout[],
+    }
+  })
+
+  const byKey = new Map(days.map(day => [day.key, day]))
+
+  for (const sleep of data.sleeps ?? []) {
+    if (sleep.score_state !== 'SCORED') continue
+    const day = byKey.get(toDayKey(new Date(sleep.end)))
+    if (day) day.sleepScore = sleep.score.sleep_performance_percentage
+  }
+
+  for (const recovery of data.recoveries ?? []) {
+    if (recovery.score_state !== 'SCORED') continue
+    const day = byKey.get(toDayKey(new Date(recovery.created_at)))
+    if (day) day.recoveryScore = recovery.score.recovery_score
+  }
+
+  for (const cycle of data.cycles ?? []) {
+    if (cycle.score_state !== 'SCORED' || cycle.score == null || cycle.end == null) continue
+    const cycleDay = new Date(cycle.end)
+    cycleDay.setDate(cycleDay.getDate() - 1)
+    const day = byKey.get(toDayKey(cycleDay))
+    if (day) day.strainScore = cycle.score.strain
+  }
+
+  for (const workout of data.workouts ?? []) {
+    if (!isScoredWorkout(workout) || workout.score.strain <= 5 || workout.sport_name === 'walking') continue
+    const day = byKey.get(toDayKey(new Date(workout.start)))
+    if (day) day.workouts.push(workout)
+  }
+
+  for (const day of days) {
+    day.workouts.sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime())
+  }
+
+  return days
+}
+
+function WhoopStat({ label, value, active, onClick }: {
   label: string
   value: string
-  children: React.ReactNode
+  active: boolean
+  onClick: () => void
 }) {
-  const [open, setOpen] = useState(false)
-
   return (
     <div>
       <button
-        onClick={() => setOpen(!open)}
+        type="button"
+        onClick={onClick}
         className="cursor-pointer text-left w-full"
       >
-        <p className="text-[#666] text-[10px] uppercase tracking-wider mb-1 hover:text-[#999] transition-colors">{label}</p>
-        <p className="text-sm font-medium">{value}</p>
+        <p className={`text-[10px] uppercase tracking-wider mb-1 transition-colors ${active ? 'text-[#A78BCA]' : 'text-[#666] hover:text-[#999]'}`}>{label}</p>
+        <p className={`text-sm font-medium transition-colors ${active ? 'text-white' : ''}`}>{value}</p>
       </button>
-      <div className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
-          <div className="text-[#999] text-[10px] font-light space-y-0.5">
-            {children}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
@@ -117,6 +252,87 @@ const sportEmoji: Record<string, string> = {
   'sprint-training': '⚡',
   cycling: '🚴',
   swimming: '🏊',
+}
+
+function DailyMetricStrip({ day, activeMetric }: { day: WhoopHistoryDay, activeMetric?: WhoopMetric }) {
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] font-light">
+      {(['sleep', 'recovery', 'strain'] as const).map((metric) => (
+        <span
+          key={metric}
+          className={activeMetric === metric ? 'text-[#e8e8e8]' : 'text-[#666]'}
+        >
+          {formatMetricLabel(metric, getMetricValue(day, metric))}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function WhoopHistoryPanel({ metric, open, days, summaryLines = [] }: {
+  metric: WhoopMetric
+  open: boolean
+  days: WhoopHistoryDay[]
+  summaryLines?: string[]
+}) {
+  const values = days
+    .map(day => getMetricValue(day, metric))
+    .filter((value): value is number => value != null)
+  const average = values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : null
+  const peak = values.length > 0 ? Math.max(...values) : null
+  const metricColor = metric === 'recovery' ? '#A78BCA' : metric === 'sleep' ? '#777' : '#999'
+
+  return (
+    <div className={`grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${open ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0'}`}>
+      <div className="overflow-hidden">
+        <div className="border-t border-[#1a1a1a] pt-4">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <p className="text-[#666] text-[10px] uppercase tracking-wider">{metric} <span className="normal-case text-[#555]">(last 14 days)</span></p>
+            <p className="text-[#555] text-[10px] font-light">
+              avg {formatMetricValue(metric, average)} · {metric === 'strain' ? 'peak' : 'best'} {formatMetricValue(metric, peak)}
+            </p>
+          </div>
+
+          {summaryLines.length > 0 && (
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-[#999] text-[10px] font-light mb-3">
+              {summaryLines.map(line => <span key={line}>{line}</span>)}
+            </div>
+          )}
+
+          <div className="grid gap-1.5 mb-4" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
+            {days.map(day => {
+              const value = getMetricValue(day, metric)
+              const fill = value == null ? 0 : Math.max(8, (value / getMetricScale(metric)) * 100)
+              return (
+                <div key={day.key} className="min-w-0">
+                  <div className="h-16 rounded-[3px] bg-[#121212] border border-[#1a1a1a] overflow-hidden flex items-end">
+                    <div
+                      className="w-full rounded-[2px] transition-all duration-500"
+                      style={{
+                        height: `${fill}%`,
+                        backgroundColor: value == null ? '#1a1a1a' : metricColor,
+                        opacity: value == null ? 0.5 : 1,
+                      }}
+                    />
+                  </div>
+                  <p className="text-[#555] text-[9px] font-light text-center mt-1 truncate">{day.shortLabel}</p>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="space-y-2">
+            {[...days].reverse().map(day => (
+              <div key={day.key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-t border-[#151515] pt-2 first:border-t-0 first:pt-0">
+                <p className="text-[#555] text-[10px] font-light shrink-0">{day.label}</p>
+                <DailyMetricStrip day={day} activeMetric={metric} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function FadeIn({ delay = 0, className = '', children }: {
@@ -157,13 +373,8 @@ function FadeIn({ delay = 0, className = '', children }: {
 function WhoopActivities({ data }: { data: WhoopData }) {
   const [open, setOpen] = useState(false)
 
-  const fourteenDaysAgo = new Date(data.fetchedAt)
-  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
-
-  const activities = (data.workouts ?? []).filter(
-    (w): w is WhoopWorkout & { score: NonNullable<WhoopWorkout['score']> } =>
-      w.score != null && w.score.strain > 5 && w.sport_name !== 'walking' && new Date(w.start) >= fourteenDaysAgo
-  )
+  const days = buildWhoopHistoryDays(data)
+  const activities = days.flatMap(day => day.workouts)
 
   if (activities.length === 0) return null
 
@@ -183,6 +394,7 @@ function WhoopActivities({ data }: { data: WhoopData }) {
         ))}
       </div>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="text-[#555] text-[10px] cursor-pointer hover:text-[#999] transition-colors mt-2"
       >
@@ -283,32 +495,20 @@ function WhoopActivities({ data }: { data: WhoopData }) {
               )
           })()}
           <div className="space-y-2">
-            {(() => {
-              let itemIndex = 0
-              return Object.entries(
-                activities.reduce<Record<string, WhoopWorkout[]>>((acc, w) => {
-                  const day = new Date(w.start).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
-                  ;(acc[day] ??= []).push(w)
-                  return acc
-                }, {})
-              ).map(([day, workouts]) => {
-                const dayDelay = itemIndex * 40
-                return (
-                  <div key={day} className="animate-fade-up" style={{ animationDelay: `${300 + dayDelay}ms` }}>
-                    <p className="text-[#555] text-[10px] font-light mb-1">{day}</p>
-                    {workouts.map((w, i) => {
-                      itemIndex++
-                      return (
-                        <div key={i} className="flex items-baseline justify-between text-[10px] ml-2">
-                          <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(w.sport_name)] || '💪'}</span> {normalizeSport(w.sport_name)}</span>
-                          <span className="text-[#666] font-light">{(() => { const ms = new Date(w.end).getTime() - new Date(w.start).getTime(); const h = Math.floor(ms / 3_600_000); const m = Math.floor((ms % 3_600_000) / 60_000); return h > 0 ? `${h}h ${m}m` : `${m}m`; })()} · {w.score?.average_heart_rate ?? '—'}bpm avg</span>
-                        </div>
-                      )
-                    })}
+            {[...days].reverse().map((day, dayIndex) => (
+              <div key={day.key} className="animate-fade-up" style={{ animationDelay: `${300 + dayIndex * 40}ms` }}>
+                <p className="text-[#555] text-[10px] font-light mb-1">{day.label}</p>
+                <div className="ml-2 mb-1">
+                  <DailyMetricStrip day={day} />
+                </div>
+                {day.workouts.map(workout => (
+                  <div key={`${workout.start}-${workout.sport_name}`} className="flex items-baseline justify-between text-[10px] ml-2">
+                    <span className="text-[#999] font-light"><span className="grayscale">{sportEmoji[normalizeSport(workout.sport_name)] || '💪'}</span> {normalizeSport(workout.sport_name)}</span>
+                    <span className="text-[#666] font-light">{formatMinutes(new Date(workout.end).getTime() - new Date(workout.start).getTime())} · {workout.score.average_heart_rate}bpm avg</span>
                   </div>
-                )
-              })
-            })()}
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -317,9 +517,13 @@ function WhoopActivities({ data }: { data: WhoopData }) {
 }
 
 function WhoopStats({ data }: { data: WhoopData | null }) {
+  const [activeMetric, setActiveMetric] = useState<WhoopMetric>('sleep')
+  const [open, setOpen] = useState(false)
+
   if (!data) return <div className="h-[72px]" />
 
   const { recovery, sleep, cycle } = data.latest
+  const historyDays = buildWhoopHistoryDays(data)
   const r = recovery.score
   const s = sleep.score
   const stages = s.stage_summary
@@ -330,29 +534,47 @@ function WhoopStats({ data }: { data: WhoopData | null }) {
   const date = fetchedDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
   const formatted = `${time}, ${date}`
 
+  const summaryLines = activeMetric === 'sleep'
+    ? [
+        `${msToHours(totalSleep)} total`,
+        `REM ${msToHours(stages.total_rem_sleep_time_milli)}`,
+        `deep ${msToHours(stages.total_slow_wave_sleep_time_milli)}`,
+      ]
+    : activeMetric === 'recovery'
+      ? [
+          `HRV ${r.hrv_rmssd_milli.toFixed(0)}ms`,
+          `RHR ${r.resting_heart_rate}bpm`,
+          `SpO2 ${r.spo2_percentage.toFixed(1)}%`,
+        ]
+      : cycle.score
+        ? [
+            `avg HR ${cycle.score.average_heart_rate}bpm`,
+            `max HR ${cycle.score.max_heart_rate}bpm`,
+            `${(cycle.score.kilojoule / 4.184).toFixed(0)} cal`,
+          ]
+        : []
+
+  function handleMetricClick(metric: WhoopMetric) {
+    if (open && activeMetric === metric) {
+      setOpen(false)
+      return
+    }
+    setActiveMetric(metric)
+    setOpen(true)
+  }
+
   return (
     <div className="animate-fade-in">
       <p className="text-[#555] text-[10px] font-light mb-3">whoop · last updated {formatted}</p>
       <div className="grid grid-cols-3 gap-4">
-        <WhoopStat label="Sleep" value={`${s.sleep_performance_percentage}%`}>
-          <p>{msToHours(totalSleep)} total</p>
-          <p>REM {msToHours(stages.total_rem_sleep_time_milli)}</p>
-          <p>deep {msToHours(stages.total_slow_wave_sleep_time_milli)}</p>
-        </WhoopStat>
-        <WhoopStat label="Recovery" value={`${r.recovery_score}%`}>
-          <p>HRV {r.hrv_rmssd_milli.toFixed(0)}ms</p>
-          <p>RHR {r.resting_heart_rate}bpm</p>
-          <p>SpO2 {r.spo2_percentage.toFixed(1)}%</p>
-        </WhoopStat>
+        <WhoopStat label="Sleep" value={`${s.sleep_performance_percentage}%`} active={open && activeMetric === 'sleep'} onClick={() => handleMetricClick('sleep')} />
+        <WhoopStat label="Recovery" value={`${r.recovery_score}%`} active={open && activeMetric === 'recovery'} onClick={() => handleMetricClick('recovery')} />
         {cycle.score && (
-          <WhoopStat label="Strain" value={cycle.score.strain.toFixed(1)}>
-            <p>avg HR {cycle.score.average_heart_rate}bpm</p>
-            <p>max HR {cycle.score.max_heart_rate}bpm</p>
-            <p>{(cycle.score.kilojoule / 4.184).toFixed(0)} cal</p>
-          </WhoopStat>
+          <WhoopStat label="Strain" value={cycle.score.strain.toFixed(1)} active={open && activeMetric === 'strain'} onClick={() => handleMetricClick('strain')} />
         )}
       </div>
 
+      <WhoopHistoryPanel metric={activeMetric} open={open} days={historyDays} summaryLines={summaryLines} />
     </div>
   )
 }
