@@ -635,11 +635,11 @@ function ImageLink({ src, alt, children }: {
       </button>
       {open && (
         <div
-          className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-6 cursor-pointer animate-lightbox-backdrop"
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-6 cursor-pointer animate-lightbox-backdrop"
           onClick={() => setOpen(false)}
         >
-          <div className="relative max-w-3xl w-full animate-lightbox-content">
-            <img src={src} alt={alt} className="max-w-full max-h-[85vh] mx-auto rounded" />
+          <div className="relative animate-lightbox-content">
+            <img src={src} alt={alt} className="max-w-[90vw] max-h-[85vh] object-contain rounded block" />
             <button
               onClick={() => setOpen(false)}
               className="absolute -top-8 right-0 text-[#666] hover:text-white text-sm transition-colors cursor-pointer"
@@ -781,6 +781,7 @@ function App() {
                   <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
                 </li>
                 <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span></li>
+                <li>triathlon: Western Sydney <ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Half Ironman</ImageLink> <span className="text-[#555]">May '26</span></li>
                 <li>tennis: USTA 3.5
                   <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
                 </li>
@@ -788,7 +789,6 @@ function App() {
             <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
             <div className="space-y-2">
               {[
-                { name: 'Western Sydney Half Ironman', date: '2026-05-03' },
                 { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
                 { name: 'Ironman', date: '2026-12-06', tbd: true },
               ].map(({ name, date, tbd, goal }) => {
