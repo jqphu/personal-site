@@ -56,37 +56,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const token = await refreshTokens()
 
-    const [recovery, sleep, cycle] = await Promise.all([
-      whoopApi('/v2/recovery?limit=1', token),
-      whoopApi('/v2/activity/sleep?limit=1', token),
-      whoopApi('/v2/cycle?limit=1', token),
-    ])
-
-    // Paginate workouts until we have 14 days of data
-    const allWorkouts: unknown[] = []
     const fourteenDaysAgo = new Date()
     fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
-    let nextToken: string | undefined
-    let hasOldEnough = false
-    do {
-      const params = new URLSearchParams({ limit: '25' })
-      if (nextToken) params.set('nextToken', nextToken)
-      const page = await whoopApi(`/v2/activity/workout?${params}`, token)
-      if (!page) break
-      const records = page.records ?? []
-      allWorkouts.push(...records)
-      nextToken = page.next_token
-      hasOldEnough = records.some((r: { start: string }) => new Date(r.start) < fourteenDaysAgo)
-    } while (nextToken && !hasOldEnough && allWorkouts.length < 250)
+
+    async function paginate(path: string, dateField: 'start' | 'created_at') {
+      const all: Record<string, unknown>[] = []
+      let nextToken: string | undefined
+      let hasOldEnough = false
+      do {
+        const params = new URLSearchParams({ limit: '25' })
+        if (nextToken) params.set('nextToken', nextToken)
+        const sep = path.includes('?') ? '&' : '?'
+        const page = await whoopApi(`${path}${sep}${params}`, token)
+        if (!page) break
+        const records = page.records ?? []
+        all.push(...records)
+        nextToken = page.next_token
+        hasOldEnough = records.some((r: Record<string, string>) => {
+          const ts = r[dateField]
+          return ts != null && new Date(ts) < fourteenDaysAgo
+        })
+      } while (nextToken && !hasOldEnough && all.length < 250)
+      return all
+    }
+
+    const [recoveries, sleeps, cycles, workouts] = await Promise.all([
+      paginate('/v2/recovery', 'created_at'),
+      paginate('/v2/activity/sleep', 'start'),
+      paginate('/v2/cycle', 'start'),
+      paginate('/v2/activity/workout', 'start'),
+    ])
 
     const data = {
       fetchedAt: new Date().toISOString(),
       latest: {
-        recovery: recovery?.records?.[0] ?? null,
-        sleep: sleep?.records?.[0] ?? null,
-        cycle: cycle?.records?.[0] ?? null,
+        recovery: recoveries[0] ?? null,
+        sleep: sleeps[0] ?? null,
+        cycle: cycles[0] ?? null,
       },
-      workouts: allWorkouts,
+      recoveries,
+      sleeps,
+      cycles,
+      workouts,
     }
 
     await kv('SET', 'whoop:data', JSON.stringify(data))

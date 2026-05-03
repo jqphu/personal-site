@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Analytics } from '@vercel/analytics/react'
 
 interface WhoopWorkoutScore {
@@ -633,7 +634,7 @@ function ImageLink({ src, alt, children }: {
       >
         {children}
       </button>
-      {open && (
+      {open && createPortal(
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-6 cursor-pointer animate-lightbox-backdrop"
           onClick={() => setOpen(false)}
@@ -647,7 +648,8 @@ function ImageLink({ src, alt, children }: {
               esc
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
@@ -790,8 +792,8 @@ function App() {
             <div className="space-y-2">
               {[
                 { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
-                { name: 'Ironman', date: '2026-12-06', tbd: true },
-              ].map(({ name, date, tbd, goal }) => {
+                { name: 'Ironman Cozumel', date: '2026-11-22' },
+              ].map(({ name, date, goal }) => {
                 const target = new Date(date)
                 const now = new Date()
                 const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
@@ -803,7 +805,7 @@ function App() {
                   <div key={name}>
                     <div className="flex items-baseline justify-between">
                       <span className="text-[#999] text-xs font-light">{name}</span>
-                      <span className="text-[#555] text-[10px] font-light tabular-nums">{tbd ? 'TBD' : `${countdown} · ${monthDay}`}</span>
+                      <span className="text-[#555] text-[10px] font-light tabular-nums">{countdown}</span>
                     </div>
                     {goal && <span className="text-[#666] text-[10px] font-light">goal: {goal}</span>}
                   </div>
