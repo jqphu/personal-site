@@ -799,7 +799,6 @@ function App() {
                 const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
                 const weeks = Math.floor(totalDays / 7)
                 const days = totalDays % 7
-                const monthDay = target.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' })
                 const countdown = weeks > 0 ? `${weeks}w ${days}d` : `${days}d`
                 return (
                   <div key={name}>
