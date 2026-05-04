@@ -581,6 +581,7 @@ function WhoopStats({ data }: { data: WhoopData | null }) {
 }
 
 const blogPosts = [
+  { title: 'Do Hard Things', date: 'May 5, 2026', href: '/blog/do-hard-things.html' },
   { title: 'Software Engineering is Dead', date: 'Feb 16, 2026', href: 'https://coreflow.dev/blog/software-engineering-is-dead.html' },
 ]
 

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Hard Things | Justin Phu</title>
+    <meta name="description" content="Why I take on side quests that sound pointless or stupid, and what they actually buy you.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://phu.dev/blog/do-hard-things">
+    <meta property="og:title" content="Do Hard Things">
+    <meta property="og:description" content="Why I take on side quests that sound pointless or stupid, and what they actually buy you.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Do Hard Things">
+    <meta name="twitter:description" content="Why I take on side quests that sound pointless or stupid, and what they actually buy you.">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --text-primary: #fafafa;
+            --text-secondary: #a0a0a0;
+            --text-muted: #5a5a5a;
+            --accent: #A78BCA;
+            --accent-dim: #A78BCA33;
+            --border: #1a1a1a;
+            --border-hover: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 60px 24px 0;
+            max-width: 680px;
+            margin: 0 auto 60px;
+        }
+
+        .site-name {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .back-link {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text-secondary);
+        }
+
+        article {
+            padding: 40px 0 100px;
+        }
+
+        .article-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 400;
+            font-style: italic;
+            line-height: 1.2;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        .article-intro {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 64px;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2::before {
+            content: '##';
+            color: var(--text-muted);
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+            line-height: 1.9;
+        }
+
+        strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        em {
+            font-style: italic;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        a:hover {
+            text-shadow: 0 0 10px var(--accent-dim);
+        }
+
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-copy {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .article-intro {
+                font-size: 0.95rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-content">
+        <a href="/" class="site-name">Justin Phu</a>
+        <a href="/" class="back-link">&larr; Back</a>
+    </header>
+
+    <main>
+        <div class="container">
+            <article>
+                <div class="article-meta">May 5, 2026</div>
+                <h1>Do Hard Things</h1>
+
+                <p class="article-intro">I like doing random side quests that sometimes sound pointless or downright stupid. I walked 100km in 27 hours. I signed up for a half-ironman with two months to prepare, having not biked or swum properly in over a decade.</p>
+
+                <p>Why do I do this?</p>
+
+                <h2>Do hard things to make hard things easy</h2>
+
+                <p>Doing hard things recalibrates what &ldquo;hard&rdquo; means. When I&rsquo;m grinding through the last 5km of a run, I tell myself: at least it&rsquo;s not as bad as that final lap sprinting with Jaidyn, or being sleep-deprived 24 hours in with 10km still to walk. You build a reference library to pull from.</p>
+
+                <p>This isn&rsquo;t just physical. Push hard mentally once and everything else looks like a breeze. Nish and I started our first company with zero startup experience. We went into an accelerator and accomplished nothing. So we locked ourselves in Bali for three months and forced ourselves to figure out how to get PMF. It was one of the more difficult stretches of my career and now most tasks feel far more bearable by comparison. (Still hard though.)</p>
+
+                <h2>You&rsquo;re more capable than you think</h2>
+
+                <p>I used to think running a half-marathon would be incredibly difficult. Then I ran one and decided a marathon would be insane. Then I ran a marathon and decided a half-ironman would be crazy. You see the pattern. Now a half-marathon just feels like a normal Sunday.</p>
+
+                <p>Leading a team building an operating system from zero background experience taught me you can figure out anything. Building Pocket Universe, and writing pretty much every single line of code myself, taught me you can execute faster than you think.</p>
+
+                <p>You only have one life. It&rsquo;s worth seeing what you&rsquo;re capable of.</p>
+
+                <h2>It&rsquo;s fun</h2>
+
+                <p>I&rsquo;ve always loved hard video games. Trying to crack top 200 in DotA 2, or grandmaster in StarCraft. Completely engulfing yourself in a target and giving it your all is somehow enjoyable to me.</p>
+
+                <p>What is life but a hyper-realistic video game? &#128578;</p>
+
+            </article>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-copy">&copy; 2026 Justin Phu</div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
