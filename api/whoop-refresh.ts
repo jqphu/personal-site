@@ -11,8 +11,9 @@ async function kv(method: string, ...args: string[]) {
     },
     body: JSON.stringify([method, ...args]),
   })
-  const data = await res.json()
-  return data.result
+  const text = await res.text()
+  if (!res.ok) throw new Error(`KV ${method} ${args[0]} failed: ${res.status} ${text}`)
+  return JSON.parse(text).result
 }
 
 async function refreshTokens() {

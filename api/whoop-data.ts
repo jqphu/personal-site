@@ -9,8 +9,9 @@ async function kvGet(key: string) {
     },
     body: JSON.stringify(['GET', key]),
   })
-  const data = await res.json()
-  return data.result
+  const text = await res.text()
+  if (!res.ok) throw new Error(`KV GET ${key} failed: ${res.status} ${text}`)
+  return JSON.parse(text).result
 }
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
