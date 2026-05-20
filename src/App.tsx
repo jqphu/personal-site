@@ -869,7 +869,7 @@ function App() {
               {[
                 { name: 'Sydney Marathon', date: '2026-08-30' },
                 { name: 'Ironman Cozumel', date: '2026-11-22' },
-              ].map(({ name, date, goal }) => {
+              ].map(({ name, date }) => {
                 const target = new Date(date)
                 const now = new Date()
                 const totalDays = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000))
@@ -882,7 +882,6 @@ function App() {
                       <span className="text-[#999] text-xs font-light">{name}</span>
                       <span className="text-[#555] text-[10px] font-light tabular-nums">{countdown}</span>
                     </div>
-                    {goal && <span className="text-[#666] text-[10px] font-light">goal: {goal}</span>}
                   </div>
                 )
               })}
