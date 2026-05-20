@@ -720,6 +720,71 @@ function VideoLink({ src, children }: {
   )
 }
 
+const HALF_MARATHON_SPLITS = [375, 385, 358, 355, 361, 367, 378, 346, 348, 354, 338, 342, 343, 327, 325, 315, 307, 303, 308, 294, 290]
+
+function formatPace(sec: number) {
+  const m = Math.floor(sec / 60)
+  const s = Math.round(sec - m * 60)
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function PaceBars({ splits, finishTime }: { splits: number[], finishTime: string }) {
+  const [open, setOpen] = useState(false)
+  const fastest = Math.min(...splits)
+  const slowest = Math.max(...splits)
+  const range = slowest - fastest || 1
+  return (
+    <div className="ml-4 mt-1.5">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-label={open ? 'hide km splits' : 'show km splits'}
+        className="group flex items-center gap-2.5 w-full cursor-pointer py-1 -my-1"
+      >
+        <span className="text-[#888] text-xs font-light tabular-nums group-hover:text-[#e8e8e8] transition-colors">{finishTime}</span>
+        <span className="flex items-end gap-[1px] h-5 flex-1 min-w-0" aria-hidden="true">
+          {splits.map((s, i) => {
+            const norm = (slowest - s) / range
+            const h = 25 + norm * 75
+            const isFastest = s === fastest
+            const opacity = 0.35 + norm * 0.65
+            return (
+              <span
+                key={i}
+                className={`flex-1 rounded-[1px] transition-all ${isFastest ? 'bg-[#A78BCA]' : 'bg-[#888] group-hover:bg-[#aaa]'}`}
+                style={{ height: `${h}%`, opacity: isFastest ? 1 : opacity }}
+              />
+            )
+          })}
+        </span>
+        <span className="text-[#555] text-[10px] font-light w-3 text-right">{open ? '−' : '+'}</span>
+      </button>
+      {open && (
+        <div className="mt-2.5 space-y-[3px]">
+          {splits.map((s, i) => {
+            const norm = (slowest - s) / range
+            const w = 20 + norm * 80
+            const isFastest = s === fastest
+            return (
+              <div key={i} className="flex items-center gap-2.5 text-[11px] font-light tabular-nums leading-none whitespace-nowrap">
+                <span className="text-[#555] w-10">km {i + 1}</span>
+                <span className={`w-10 ${isFastest ? 'text-[#A78BCA]' : 'text-[#888]'}`}>{formatPace(s)}</span>
+                <span className="flex-1 h-[3px] bg-[#222] rounded-full overflow-hidden">
+                  <span
+                    className={`block h-full rounded-full ${isFastest ? 'bg-[#A78BCA]' : 'bg-[#555]'}`}
+                    style={{ width: `${w}%` }}
+                  />
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App() {
   const whoopData = useWhoopData()
 
@@ -783,8 +848,16 @@ function App() {
                 <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
                   <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
                 </li>
-                <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span></li>
-                <li>triathlon: Western Sydney <ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Half Ironman</ImageLink> <span className="text-[#555]">May '26</span></li>
+                <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span>
+                  <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:59:09" />
+                </li>
+                <li>triathlon: Western Sydney <ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
+                  <div className="ml-4 mt-1.5 grid grid-cols-[3.5rem_4.5rem_auto] gap-x-3 gap-y-[3px] text-[#888] tabular-nums leading-relaxed">
+                    <span className="text-[#666]"><span aria-hidden="true">🏊</span> swim</span><span>54:08</span><span className="text-[#555]">2:49 /100m</span>
+                    <span className="text-[#666]"><span aria-hidden="true">🚴</span> bike</span><span>3:19:40</span><span className="text-[#555]">26.9 km/h</span>
+                    <span className="text-[#666]"><span aria-hidden="true">🏃</span> run</span><span>2:13:18</span><span className="text-[#555]">6:21 /km</span>
+                  </div>
+                </li>
                 <li>tennis: USTA 3.5
                   <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
                 </li>
