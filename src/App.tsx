@@ -851,7 +851,7 @@ function App() {
                 <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span>
                   <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:59:09" />
                 </li>
-                <li>triathlon: Western Sydney <ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
+                <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
                   <div className="ml-4 mt-1.5 grid grid-cols-[3.5rem_4.5rem_auto] gap-x-3 gap-y-[3px] text-[#888] tabular-nums leading-relaxed">
                     <span className="text-[#666]"><span aria-hidden="true">🏊</span> swim</span><span>54:08</span><span className="text-[#555]">2:49 /100m</span>
                     <span className="text-[#666]"><span aria-hidden="true">🚴</span> bike</span><span>3:19:40</span><span className="text-[#555]">26.9 km/h</span>
