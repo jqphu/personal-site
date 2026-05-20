@@ -848,8 +848,10 @@ function App() {
                 <li>lifting: 1,000lb total club <span className="text-[#555]">Jun '25</span>
                   <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
                 </li>
-                <li>running: sub 2hr half marathon <span className="text-[#555]">Feb '26</span>
+                <li>running:
+                  <p className="ml-4 text-[#666]">half-marathon PR: sub 2hr <span className="text-[#555]">Feb '26</span></p>
                   <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:59:09" />
+                  <p className="ml-4 text-[#666]">marathon goal: sub 4 hour</p>
                 </li>
                 <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
                   <div className="ml-4 mt-1.5 grid grid-cols-[3.5rem_4.5rem_auto] gap-x-3 gap-y-[3px] text-[#888] tabular-nums leading-relaxed">
@@ -865,7 +867,7 @@ function App() {
             <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
             <div className="space-y-2">
               {[
-                { name: 'Sydney Marathon', date: '2026-08-30', goal: 'sub 4 hour' },
+                { name: 'Sydney Marathon', date: '2026-08-30' },
                 { name: 'Ironman Cozumel', date: '2026-11-22' },
               ].map(({ name, date, goal }) => {
                 const target = new Date(date)
