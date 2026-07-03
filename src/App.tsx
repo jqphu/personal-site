@@ -851,7 +851,7 @@ function App() {
                 <li>running:
                   <p className="ml-4 text-[#666]">half-marathon PR: 1:43:41 <span className="text-[#555]">Jul '26</span></p>
                   <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:43:41" />
-                  <p className="ml-4 text-[#666]">marathon goal: sub 4 hour</p>
+                  <p className="ml-4 text-[#666]">marathon goal: 3:30 (with a pray)</p>
                 </li>
                 <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
                   <div className="ml-4 mt-1.5 grid grid-cols-[3.5rem_4.5rem_auto] gap-x-3 gap-y-[3px] text-[#888] tabular-nums leading-relaxed">
@@ -868,7 +868,8 @@ function App() {
             <div className="space-y-2">
               {[
                 { name: 'Sydney Marathon', date: '2026-08-30' },
-                { name: 'Ironman Cozumel', date: '2026-11-22' },
+                { name: 'Sydney Backyard Ultra', date: '2026-09-18' },
+                { name: 'Ironman AUS or Cozumel', date: '2026-10-18' },
               ].map(({ name, date }) => {
                 const target = new Date(date)
                 const now = new Date()
@@ -893,7 +894,7 @@ function App() {
           <section>
             <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4">Life</h2>
             <ul className="text-[#999] text-xs font-light leading-[1.9] space-y-1 list-disc list-inside">
-              <li>29 chronological age, 21.6 whoop age</li>
+              <li>29 chronological age, 20.7 whoop age</li>
               <li>married</li>
               <li><ImageLink src="/100km-walk.png" alt="100km birthday walk — Apple Fitness stats showing 99.9km in 27 hours">walked 100km</ImageLink> for my birthday</li>
             </ul>
