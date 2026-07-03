@@ -720,7 +720,7 @@ function VideoLink({ src, children }: {
   )
 }
 
-const HALF_MARATHON_SPLITS = [375, 385, 358, 355, 361, 367, 378, 346, 348, 354, 338, 342, 343, 327, 325, 315, 307, 303, 308, 294, 290]
+const HALF_MARATHON_SPLITS = [294, 292, 292, 294, 295, 288, 296, 289, 295, 297, 294, 292, 292, 291, 289, 290, 289, 293, 335, 302, 291]
 
 function formatPace(sec: number) {
   const m = Math.floor(sec / 60)
@@ -849,8 +849,8 @@ function App() {
                   <p className="ml-4 text-[#666]"><VideoLink src="/squat.mp4">squat 172.5kg</VideoLink> · <VideoLink src="/bench.mp4">bench 110kg</VideoLink> · <VideoLink src="/deadlift.mp4">deadlift 195kg</VideoLink></p>
                 </li>
                 <li>running:
-                  <p className="ml-4 text-[#666]">half-marathon PR: sub 2hr <span className="text-[#555]">Feb '26</span></p>
-                  <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:59:09" />
+                  <p className="ml-4 text-[#666]">half-marathon PR: 1:43:41 <span className="text-[#555]">Jul '26</span></p>
+                  <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:43:41" />
                   <p className="ml-4 text-[#666]">marathon goal: sub 4 hour</p>
                 </li>
                 <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
