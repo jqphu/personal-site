@@ -322,7 +322,6 @@ function App() {
             <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
             <div className="space-y-2">
               {[
-                { name: 'Ironman AUS or Cozumel', date: '2026-10-18' },
                 { name: 'Kosci100', date: '2026-11-27' },
               ].map(({ name, date }) => {
                 const target = new Date(date)
