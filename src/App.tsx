@@ -305,6 +305,7 @@ function App() {
                   <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:43:41" />
                   <p className="ml-4 text-[#666]">marathon PR: 3:59:01 <span className="text-[#555]">Sydney · Aug '26</span></p>
                   <PaceBars splits={MARATHON_SPLITS} finishTime="3:59:01" />
+                  <p className="ml-4 text-[#666]">marathon goal: 3:30 🙏</p>
                 </li>
                 <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
                   <div className="ml-4 mt-1.5 grid grid-cols-[3.5rem_4.5rem_auto] gap-x-3 gap-y-[3px] text-[#888] tabular-nums leading-relaxed">
