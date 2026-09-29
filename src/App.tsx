@@ -266,7 +266,7 @@ function App() {
             <h2 className="text-xs font-medium text-[#A78BCA] uppercase tracking-widest mb-4"><a href="https://www.linkedin.com/in/justin-phu/" target="_blank" rel="noopener noreferrer" className="text-[#A78BCA] no-underline border-b border-[#444] hover:text-[#e8e8e8] hover:border-[#e8e8e8] transition-colors">Career ↗</a></h2>
             <div className="space-y-3">
               <div className="flex items-baseline justify-between">
-                <p className="text-sm font-medium">Co-Founder, <a href="https://dreamerlabs.ai/" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">Dreamer Labs ↗</a></p>
+                <p className="text-sm font-medium">Co-Founder, <a href="https://dreamerlabs.ai/" target="_blank" rel="noopener noreferrer" className="text-[#e8e8e8] no-underline border-b border-[#444] hover:text-white hover:border-white transition-colors">Dreamerlabs ↗</a></p>
                 <span className="text-[#777] text-xs shrink-0 ml-4">2025 –</span>
               </div>
               <div className="flex items-baseline justify-between">
