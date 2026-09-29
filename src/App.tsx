@@ -177,6 +177,8 @@ function VideoLink({ src, children }: {
   )
 }
 
+const MARATHON_SPLITS = [290, 307, 300, 294, 281, 318, 290, 321, 302, 293, 309, 299, 312, 331, 301, 329, 305, 320, 313, 301, 331, 309, 341, 322, 321, 364, 355, 356, 372, 335, 370, 359, 388, 381, 364, 408, 379, 368, 389, 372, 385, 360, 339]
+
 const HALF_MARATHON_SPLITS = [294, 292, 292, 294, 295, 288, 296, 289, 295, 297, 294, 292, 292, 291, 289, 290, 289, 293, 335, 302, 291]
 
 function formatPace(sec: number) {
@@ -301,7 +303,8 @@ function App() {
                 <li>running:
                   <p className="ml-4 text-[#666]">half-marathon PR: 1:43:41 <span className="text-[#555]">Jul '26</span></p>
                   <PaceBars splits={HALF_MARATHON_SPLITS} finishTime="1:43:41" />
-                  <p className="ml-4 text-[#666]">marathon: sub-4 <span className="text-[#555]">Sydney · Aug '26</span></p>
+                  <p className="ml-4 text-[#666]">marathon PR: 3:59:01 <span className="text-[#555]">Sydney · Aug '26</span></p>
+                  <PaceBars splits={MARATHON_SPLITS} finishTime="3:59:01" />
                   <p className="ml-4 text-[#666]">marathon goal: 3:30 🙏</p>
                 </li>
                 <li><ImageLink src="/half-ironman.jpg" alt="Western Sydney Half Ironman">Western Sydney Half Ironman</ImageLink> <span className="text-[#555]">May '26</span>
@@ -311,6 +314,7 @@ function App() {
                     <span className="text-[#666]"><span aria-hidden="true">🏃</span> run</span><span>2:13:18</span><span className="text-[#555]">6:21 /km</span>
                   </div>
                 </li>
+                <li>Sydney Backyard Ultra: 10 yards · 67km in 10h <span className="text-[#555]">Sep '26</span></li>
                 <li>tennis: USTA 3.5
                   <p className="ml-4 text-[#666]">goal: best tennis player 65 years or older</p>
                 </li>
@@ -318,7 +322,6 @@ function App() {
             <p className="text-[#666] text-[10px] uppercase tracking-wider mt-5 mb-3">Upcoming</p>
             <div className="space-y-2">
               {[
-                { name: 'Sydney Backyard Ultra', date: '2026-09-18' },
                 { name: 'Ironman AUS or Cozumel', date: '2026-10-18' },
               ].map(({ name, date }) => {
                 const target = new Date(date)
