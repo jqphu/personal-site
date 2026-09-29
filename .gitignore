@@ -25,7 +25,6 @@ dist-ssr
 .vercel
 .env
 .env.local
-public/whoop-data.json
 *.mov
 *.MP4
 .env*.local

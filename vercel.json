@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/whoop-refresh",
-      "schedule": "0 * * * *"
-    }
-  ]
-}
